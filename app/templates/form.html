@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<!-- Строка ниже подгоняет ширину экрана в зависимости от устройства (планшет, телефон, бук) -->
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Choose coin</title>
+    <script type="text/javascript" src="{{ url_for('static', path='javascript/main.js') }}">
+    </script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='css/choose_coin.css') }}"/>
+</head>
+<body>
+<div class="placeholder"></div>
+<div class="placeholder">
+     <fieldset>
+ <form name="form" action="" method="post" enctype="application/x-www-form-urlencoded" onsubmit="return false">
+
+     <select name="coin"> <!-- size="2" multiple -->
+         <option value="bitcoin" selected="selected">Bitcoin</option>
+         <option value="bitcoin-cash">Bitcoincash</option>
+     </select>
+     <select name="currency">
+         <option value="usd" selected="selected">USD</option>
+         <option value="rub">RUB</option>
+     </select>
+     <button onclick="fetchPrice()">Получить</button>
+
+ </form>
+     </br>
+     <a href="/">Назад</a>
+     </fieldset>
+</div>
+     </br>
+<div id="divResult" class="placeholder">
+</div>
+
+     
+<div class="placeholder"></div>
+
+
+</body>
+</html>
