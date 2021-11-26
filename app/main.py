@@ -13,7 +13,6 @@ from pathlib import Path
 
 # Импортируем валидирующие функции, классы, базу с пользователями
 from app.validators import get_username_from_signed_string, sign_data, verify_password, validate_phone, create_user_cookie
-from app.schemas import User, UserEx
 from app.user_data import USERS
 
 
