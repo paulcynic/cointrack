@@ -51,7 +51,7 @@ def init_db(db: Session) -> None:
             )
         currency = crud.currency.get_multi(db, limit=10)
         if not currency:
-            with open("/home/paulcynic/cointrack/currencies.json", "r", encoding="utf-8") as currency_db:
+            with open("currencies.json", "r", encoding="utf-8") as currency_db:
                 currencies = json.load(currency_db)
                 for row in range(len(currencies)):
                     currency_in = schemas.CurrencyCreate(

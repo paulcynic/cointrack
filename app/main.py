@@ -1,6 +1,5 @@
 import requests
-import json
-from fastapi import FastAPI, APIRouter, Cookie, Body, Form, Query, HTTPException, Request
+from fastapi import FastAPI, APIRouter, Cookie, Body, Form, Query, HTTPException, Request, Depends
 from fastapi.responses import Response, RedirectResponse
 # Из fastapi импортируем Jinja2Templates
 from fastapi.templating import Jinja2Templates
@@ -14,6 +13,10 @@ from pathlib import Path
 # Импортируем валидирующие функции, классы, базу с пользователями
 from app.validators import get_username_from_signed_string, sign_data, verify_password, validate_phone, create_user_cookie
 from app.user_data import USERS
+from sqlalchemy.orm import Session
+from app.schemas.coin_price import CoinPriceCreate
+from app import deps
+from app import crud
 
 
 app = FastAPI(title="DemoAuthCointrack", openapi_url="/rock/openapi.json")
@@ -68,12 +71,21 @@ def phone_from_query(*, phone: Optional[str] = Query(None, example="89991234567"
 
 
 @router.get("/coin/", status_code=200)
-def request_coin(request: Request):
-    return TEMPLATES.TemplateResponse("form.html", {"request": request},)
+def request_coin(*,
+        request: Request,
+        db: Session = Depends(deps.get_db)
+        ):
+    currencies = crud.currency.get_multi(db=db, limit=4)
+    return TEMPLATES.TemplateResponse("form.html", {"request": request, "currencies": currencies},)
 
 
 @router.post("/request/coin/", status_code=201)
-def post_request_coin(coin: str = Form(...), currency: str = Form(...)):
+def post_request_coin(
+        *,
+        coin: str = Form(...),
+        currency: str = Form(...),
+        db: Session = Depends(deps.get_db)
+        ):
     payload = {'ids': coin, 'vs_currencies': currency}
     r = requests.get('https://api.coingecko.com/api/v3/simple/price', params=payload)
 #    coin_list = requests.get('https://api.coingecko.com/api/v3/coins/list').json()
@@ -82,8 +94,17 @@ def post_request_coin(coin: str = Form(...), currency: str = Form(...)):
 #    currencies_list = requests.get('https://api.coingecko.com/api/v3/simple/supported_vs_currencies').json()
 #    with open("currencies.json", "a") as c:
 #        json.dump(currencies_list, c)
-    return r.json()
+    response = r.json()
+    name = [key for key in response][0]
+    label = [key for key in response[name]][0]
+    price = float(response[name][label])
+    coin_price_in = CoinPriceCreate(
+            currency_name = name,
+            currency_label = label,
+            price = price,
+            submitter_id = 1)
+    crud.coin_price.create(db=db, obj_in=coin_price_in)
+    return response
 
 app.include_router(router)
-
 

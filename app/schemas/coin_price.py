@@ -15,7 +15,7 @@ class CoinPriceCreate(CoinPriceBase):
     currency_name: str
     currency_label: str
     price: float
-    current_datetime: datetime
+    current_datetime: Optional[datetime]
     submitter_id: int
 
 
