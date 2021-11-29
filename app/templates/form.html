@@ -16,19 +16,20 @@
  <form name="form" action="" method="post" enctype="application/x-www-form-urlencoded" onsubmit="return false">
 
      <select name="coin"> <!-- size="2" multiple -->
-         {% for currency in currencies %}
-         <option value="{{ currency.name }}">{{ currency.name|capitalize }}</option>
+         {% for coin in coins %}
+         <option value="{{ coin.name }}">{{ coin.name|capitalize }}</option>
          {% endfor %}
      </select>
      <select name="currency">
-         <option value="usd" selected="selected">USD</option>
-         <option value="rub">RUB</option>
+         {% for currency in currencies %}
+         <option value="{{ currency.value }}">{{ currency.name|upper }}</option>
+         {% endfor %}
      </select>
      <button onclick="fetchPrice()">Получить</button>
 
  </form>
      </br>
-     <a href="/">Назад</a>
+     <a href="{{url_for('index_page')}}">Login</a>
      </fieldset>
 </div>
      </br>

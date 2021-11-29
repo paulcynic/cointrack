@@ -12,6 +12,7 @@ from pathlib import Path
 
 # Импортируем валидирующие функции, классы, базу с пользователями
 from app.validators import get_username_from_signed_string, sign_data, verify_password, validate_phone, create_user_cookie
+from app.currencies import Currency3
 from app.user_data import USERS
 from sqlalchemy.orm import Session
 from app.schemas.coin_price import CoinPriceCreate
@@ -75,8 +76,12 @@ def request_coin(*,
         request: Request,
         db: Session = Depends(deps.get_db)
         ):
-    currencies = crud.currency.get_multi(db=db, limit=4)
-    return TEMPLATES.TemplateResponse("form.html", {"request": request, "currencies": currencies},)
+    coins = crud.currency.get_multi(db=db, limit=4)
+    return TEMPLATES.TemplateResponse("form.html", {
+        "request": request,
+        "coins": coins,
+        "currencies": Currency3
+        })
 
 
 @router.post("/request/coin/", status_code=201)
