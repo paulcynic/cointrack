@@ -4,11 +4,11 @@ from sqlalchemy.orm import relationship
 from . import Base
 
 
-class Currency(Base):
+class Coin(Base):
     id = Column(Integer, primary_key=True, index=True)
-    label = Column(String(4), unique=True, nullable=False)
-    labels = relationship("CoinPrice",
-            back_populates="submitter_label",
+    name = Column(String(128), unique=True, nullable=True)
+    coin_name = relationship("CoinPrice",
+            back_populates="submitter_coin",
             cascade="all,delete-orphan",
             uselist=True
             )

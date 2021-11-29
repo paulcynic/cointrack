@@ -1,18 +1,17 @@
 import requests
-from fastapi import FastAPI, APIRouter, Cookie, Body, Form, Query, HTTPException, Request, Depends
+from fastapi import FastAPI, APIRouter, Cookie, Form, Query, HTTPException, Request, Depends
 from fastapi.responses import Response, RedirectResponse
 # Из fastapi импортируем Jinja2Templates
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
 
-from typing import Optional, Any
+from typing import Optional
 # Из pathlib импортируем путь для папки с шаблонами 
 from pathlib import Path
 
 # Импортируем валидирующие функции, классы, базу с пользователями
 from app.validators import get_username_from_signed_string, sign_data, verify_password, validate_phone, create_user_cookie
-from app.currencies import Currency3
 from app.user_data import USERS
 from sqlalchemy.orm import Session
 from app.schemas.coin_price import CoinPriceCreate
@@ -76,11 +75,12 @@ def request_coin(*,
         request: Request,
         db: Session = Depends(deps.get_db)
         ):
-    coins = crud.currency.get_multi(db=db, limit=4)
+    coins = crud.coin.get_multi(db=db, limit=4)
+    currencies = crud.currency.get_multi(db=db, limit=5)
     return TEMPLATES.TemplateResponse("form.html", {
         "request": request,
         "coins": coins,
-        "currencies": Currency3
+        "currencies": currencies
         })
 
 
@@ -93,18 +93,12 @@ def post_request_coin(
         ):
     payload = {'ids': coin, 'vs_currencies': currency}
     r = requests.get('https://api.coingecko.com/api/v3/simple/price', params=payload)
-#    coin_list = requests.get('https://api.coingecko.com/api/v3/coins/list').json()
-#    with open("coin.json", "a") as c:
-#        json.dump(coin_list, c)
-#    currencies_list = requests.get('https://api.coingecko.com/api/v3/simple/supported_vs_currencies').json()
-#    with open("currencies.json", "a") as c:
-#        json.dump(currencies_list, c)
     response = r.json()
     name = [key for key in response][0]
     label = [key for key in response[name]][0]
     price = float(response[name][label])
     coin_price_in = CoinPriceCreate(
-            currency_name = name,
+            coin_name = name,
             currency_label = label,
             price = price,
             submitter_id = 1)

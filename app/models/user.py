@@ -4,8 +4,8 @@ from . import Base
 
 
 class User(Base):
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(128), index=True, nullable=False)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
+    name = Column(String(128), unique=True, nullable=False)
     password = Column(String(256), nullable=True)
     balance = Column(Integer, nullable=True)
     is_superuser = Column(Boolean, default=False)

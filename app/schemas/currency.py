@@ -4,17 +4,14 @@ from typing import Optional
 
 class CurrencyBase(BaseModel):
     label: Optional[str]
-    name: Optional[str]
 
 
 class CurrencyCreate(CurrencyBase):
     label: str
-    name: Optional[str]
 
 
 class CurrencyUpdate(CurrencyBase):
     label: str
-    name: str
 
 
 # Properties shared by models stored in DB

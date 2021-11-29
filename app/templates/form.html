@@ -12,7 +12,7 @@
 <body>
 <div class="placeholder"></div>
 <div class="placeholder">
-     <fieldset>
+<fieldset>
  <form name="form" action="" method="post" enctype="application/x-www-form-urlencoded" onsubmit="return false">
 
      <select name="coin"> <!-- size="2" multiple -->
@@ -22,15 +22,13 @@
      </select>
      <select name="currency">
          {% for currency in currencies %}
-         <option value="{{ currency.value }}">{{ currency.name|upper }}</option>
+         <option value="{{ currency.label }}">{{ currency.label|upper }}</option>
          {% endfor %}
      </select>
-     <button onclick="fetchPrice()">Получить</button>
+     <button onclick="fetchPrice()">Get price!</button>
 
  </form>
-     </br>
-     <a href="{{url_for('index_page')}}">Login</a>
-     </fieldset>
+</fieldset>
 </div>
      </br>
 <div id="divResult" class="placeholder">

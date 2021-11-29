@@ -35,29 +35,38 @@ def init_db(db: Session) -> None:
     # the tables un-commenting the next line
     # Base.metadata.create_all(bind=engine)
     if FIRST_SUPERUSER:
-        user = crud.user.get_by_name(db, name=FIRST_SUPERUSER)
-        if not user:
+        superuser = crud.user.get_by_name(db, name=FIRST_SUPERUSER)
+        if not superuser:
             user_in = schemas.UserCreate(
                 name=FIRST_SUPERUSER,
                 password="some_password_1",
                 balance=0,
                 is_superuser=True,
             )
-            user = crud.user.create(db, obj_in=user_in)  # noqa: F841
+            superuser = crud.user.create(db, obj_in=user_in)  # noqa: F841
         else:
             logger.warning(
                 "Skipping creating superuser. User with email "
                 f"{FIRST_SUPERUSER} already exists. "
             )
-        currency = crud.currency.get_multi(db, limit=10)
-        if not currency:
+        currencies = crud.currency.get_multi(db, limit=3)
+        if not currencies:
             with open("currencies.json", "r", encoding="utf-8") as currency_db:
                 currencies = json.load(currency_db)
-                for row in range(len(currencies)):
+                for i in range(len(currencies)):
                     currency_in = schemas.CurrencyCreate(
-                            label = currencies[row]
+                            label = currencies[i]
                         )
                     crud.currency.create(db, obj_in=currency_in)
+        coins = crud.coin.get_multi(db, limit=10)
+        if not coins:
+            with open("coins.json", "r", encoding="utf-8") as coin_db:
+                coins = json.load(coin_db)
+                for i in range(len(coins)):
+                    coin_in = schemas.CoinCreate(
+                            name = coins[i]
+                        )
+                    crud.coin.create(db, obj_in=coin_in)
     else:
         logger.warning(
             "Skipping creating superuser.  FIRST_SUPERUSER needs to be "

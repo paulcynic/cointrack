@@ -5,7 +5,6 @@ from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
 import sys
 
-sys.path = ['', '..'] + sys.path[1:]
 
 #from sqlalchemy.ext.declarative import as_declarative, declared_attr
 
@@ -22,10 +21,14 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 #!!!target_metadata = mymodel.Base.metadata!!!
 # target_metadata = None
+
+sys.path = ['', '..'] + sys.path[1:]
+
 from app.models import Base
+from app.db.session import SQLALCHEMY_DATABASE_URI
 
 target_metadata = Base.metadata
-SQLALCHEMY_DATABASE_URI = "sqlite:///example.db"
+SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI
 
 
 # class_registry: t.Dict = {}

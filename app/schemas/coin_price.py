@@ -4,7 +4,7 @@ from typing import Sequence, Optional
 
 
 class CoinPriceBase(BaseModel):
-    currency_name: Optional[str]
+    coin_name: Optional[str]
     currency_label: Optional[str]
     price: Optional[float] = None
     current_datetime: Optional[datetime] = None
@@ -12,7 +12,7 @@ class CoinPriceBase(BaseModel):
 
 
 class CoinPriceCreate(CoinPriceBase):
-    currency_name: str
+    coin_name: str
     currency_label: str
     price: float
     current_datetime: Optional[datetime]
