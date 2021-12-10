@@ -15,7 +15,16 @@ function addResultForm(text){
 	p.appendChild(pText);
 }
 
-// Поиск книг
+
+function addResultString(text, p){
+	if (text.length == 0) return;
+	var pText = document.createTextNode(text);
+	var br = document.createElement("br");
+    p.appendChild(pText);
+    p.appendChild(br);
+}
+
+
 function fetchPrice(){
 	// Параметры поиска
     var form = document.forms.form
@@ -37,7 +46,7 @@ function fetchPrice(){
 		};
 		
 	// Метод POST
-	req.open("POST", "/request/coin/", true);
+	req.open("POST", "/api/v1/coins/request/coin/", true);
 
 	// Установка заголовков
 	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -46,3 +55,29 @@ function fetchPrice(){
 	// Отправка данных BODY методом POST 
 	req.send(searchString);			
 }
+
+
+function showAll(){
+	// Запрос к серверу
+	var req = new XMLHttpRequest();
+	req.onreadystatechange = function(){
+		if (req.readyState != 4) return;
+        var respText = req.responseText;
+        var resObj = JSON.parse(respText);
+		clearList();
+	    var divResult = document.getElementById("divResult");
+	    var bracket = document.createElement("fieldset");
+        var p = document.createElement("p")
+	    divResult.appendChild(bracket).appendChild(p);
+        for (var i = 0; i < resObj.length; i++){
+            var text = String(resObj[i].coin_name) + ": " + String(resObj[i].price) + " " + String(resObj[i].currency_label);
+			addResultString(text, p);
+        };
+	};
+		
+	// Метод POST
+	req.open("GET", "/api/v1/coins/follow_all/", true);
+
+	req.send();			
+}
+

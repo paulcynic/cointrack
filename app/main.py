@@ -1,33 +1,29 @@
-import requests
-from fastapi import FastAPI, APIRouter, Cookie, Form, Query, HTTPException, Request, Depends
+from time import time
+from fastapi import FastAPI, APIRouter, Cookie, Form, HTTPException, Request, Depends
 from fastapi.responses import Response, RedirectResponse
-# Из fastapi импортируем Jinja2Templates
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
+from sqlalchemy.orm import Session
 
 from typing import Optional
-# Из pathlib импортируем путь для папки с шаблонами 
-from pathlib import Path
 
-# Импортируем валидирующие функции, классы, базу с пользователями
-from app.validators import get_username_from_signed_string, sign_data, verify_password, validate_phone, create_user_cookie
-from app.user_data import USERS
-from sqlalchemy.orm import Session
-from app.schemas.coin_price import CoinPriceCreate
-from app import deps
 from app import crud
+from app.api import deps
+from app.user_data import USERS
+from app.api.api_v1.api import api_router
+from app.core.config import settings
+from app.validators import get_username_from_signed_string, sign_data, verify_password, validate_phone, create_user_cookie
 
 
-app = FastAPI(title="DemoAuthCointrack", openapi_url="/rock/openapi.json")
-router = APIRouter()
+app = FastAPI(title="DemoAuthCointrack", openapi_url="/openapi.json")
+root_router = APIRouter()
 
-BASE_PATH = Path(__file__).resolve().parent
-TEMPLATES = Jinja2Templates(directory=str(BASE_PATH/"templates"))
-app.mount("/static", StaticFiles(directory=str(BASE_PATH/"static")), name="static")
+TEMPLATES = Jinja2Templates(directory=str(settings.BASE_PATH/"templates"))
+app.mount("/static", StaticFiles(directory=str(settings.BASE_PATH/"static")), name="static")
 
 # читает куку "username" как параметр функции
-@router.get("/", status_code=200) #response_model=User
+@root_router.get("/login/", status_code=200) #response_model=User
 def index_page(request: Request, response: Response, username: Optional[str] = Cookie(default=None)):
     login_page = TEMPLATES.TemplateResponse("login.html", {"request": request},)
     if username is None:
@@ -41,14 +37,9 @@ def index_page(request: Request, response: Response, username: Optional[str] = C
     url = app.url_path_for("request_coin")
     response = RedirectResponse(url=url)
     return response
-    #return USERS[valid_username]
 
 
-#Response(f"Hello, {USERS[valid_username]['name']}!<br />Balance: {USERS[valid_username]['balance']}.", media_type="text/html")
-
-
-# читает переданные данные формы "username", "password" как параметры функции
-@router.post("/login/", status_code=201)
+@root_router.post("/login/", status_code=201)
 def process_login_page(*, request: Request, response: Response, username: str = Form(...), password: str = Form(...)):
     user = USERS.get(username)
     #Если не найдёт ключ, вернёт пустое значение
@@ -63,14 +54,7 @@ def process_login_page(*, request: Request, response: Response, username: str = 
     return response
 
 
-@router.get("/unify_phone_from_query")
-def phone_from_query(*, phone: Optional[str] = Query(None, example="89991234567")):
-    raw_phone = phone
-    resp_phone = validate_phone(raw_phone)
-    return Response(resp_phone)
-
-
-@router.get("/coin/", status_code=200)
+@root_router.get("/", status_code=200)
 def request_coin(*,
         request: Request,
         db: Session = Depends(deps.get_db)
@@ -84,26 +68,16 @@ def request_coin(*,
         })
 
 
-@router.post("/request/coin/", status_code=201)
-def post_request_coin(
-        *,
-        coin: str = Form(...),
-        currency: str = Form(...),
-        db: Session = Depends(deps.get_db)
-        ):
-    payload = {'ids': coin, 'vs_currencies': currency}
-    r = requests.get('https://api.coingecko.com/api/v3/simple/price', params=payload)
-    response = r.json()
-    name = [key for key in response][0]
-    label = [key for key in response[name]][0]
-    price = float(response[name][label])
-    coin_price_in = CoinPriceCreate(
-            coin_name = name,
-            currency_label = label,
-            price = price,
-            submitter_id = 1)
-    crud.coin_price.create(db=db, obj_in=coin_price_in)
+# Add time of the request to the headers.
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time()
+    response = await call_next(request)
+    process_time = time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
     return response
 
-app.include_router(router)
+
+app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(root_router)
 

@@ -25,27 +25,13 @@ fileConfig(config.config_file_name)
 sys.path = ['', '..'] + sys.path[1:]
 
 from app.models import Base
-from app.db.session import SQLALCHEMY_DATABASE_URI
+from app.core.config import settings
 
 target_metadata = Base.metadata
-SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI
 
-
-# class_registry: t.Dict = {}
-# 
-# 
-# @as_declarative(class_registry=class_registry)
-# class Base:
-#     id: t.Any
-#     __name__: str
-# 
-#     # Generate __tablename__ automatically from classname
-#     @declared_attr
-#     def __tablename__(cls) -> str:
-#         return cls.__name__.lower()
 
 def get_url():
-    return SQLALCHEMY_DATABASE_URI
+    return settings.SQLALCHEMY_DATABASE_URI
 
 
 def run_migrations_offline():

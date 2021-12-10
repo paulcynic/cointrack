@@ -6,17 +6,18 @@ authors = ["Paul"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-uvicorn = "~0.11.3"
 fastapi = "~0.68.0"
 python-multipart = "~0.0.5"
 pydantic = {extras = ["email"], version = "~1.8.1"}
 Jinja2 = "^3.0.2"
-requests = "^2.26.0"
 SQLAlchemy = "^1.4.25"
 alembic = "^1.7.4"
 tenacity = "^8.0.1"
 aiofiles = "^0.7.0"
 psycopg2-binary = "^2.9.2"
+uvicorn = "^0.15.0"
+celery = "^5.2.1"
+httpx = "^0.21.1"
 
 [tool.poetry.dev-dependencies]
 psycopg2-binary = "^2.9.1"

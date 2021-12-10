@@ -3,6 +3,7 @@ import json
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
+from app.core.config import settings
 
 # from sqlalchemy import create_engine
 
@@ -22,8 +23,6 @@ from app import crud, schemas
 
 logger = logging.getLogger(__name__)
 
-FIRST_SUPERUSER = "paul@user.com"
-
 # make sure all SQL Alchemy models are imported (app.db.base) before initializing DB
 # otherwise, SQL Alchemy might fail to initialize relationships properly
 # for more details: https://github.com/tiangolo/full-stack-fastapi-postgresql/issues/28
@@ -34,11 +33,11 @@ def init_db(db: Session) -> None:
     # But if you don't want to use migrations, create
     # the tables un-commenting the next line
     # Base.metadata.create_all(bind=engine)
-    if FIRST_SUPERUSER:
-        superuser = crud.user.get_by_name(db, name=FIRST_SUPERUSER)
+    if settings.FIRST_SUPERUSER:
+        superuser = crud.user.get_by_name(db, name=settings.FIRST_SUPERUSER)
         if not superuser:
             user_in = schemas.UserCreate(
-                name=FIRST_SUPERUSER,
+                name=settings.FIRST_SUPERUSER,
                 password="some_password_1",
                 balance=0,
                 is_superuser=True,
@@ -47,7 +46,7 @@ def init_db(db: Session) -> None:
         else:
             logger.warning(
                 "Skipping creating superuser. User with email "
-                f"{FIRST_SUPERUSER} already exists. "
+                f"{settings.FIRST_SUPERUSER} already exists. "
             )
         currencies = crud.currency.get_multi(db, limit=3)
         if not currencies:
