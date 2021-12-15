@@ -13,7 +13,7 @@ from app.api import deps
 from app.user_data import USERS
 from app.api.api_v1.api import api_router
 from app.core.config import settings
-from app.validators import get_username_from_signed_string, sign_data, verify_password, validate_phone, create_user_cookie
+from app.validators import get_username_from_signed_string, verify_password, create_user_cookie
 
 
 app = FastAPI(title="DemoAuthCointrack", openapi_url="/openapi.json")
@@ -29,7 +29,7 @@ def index_page(request: Request, response: Response, username: Optional[str] = C
     if username is None:
         return login_page
     try:
-        valid_username = get_username_from_signed_string(username)
+        get_username_from_signed_string(username)
     except ValueError:
         response = login_page
         response.delete_cookie("username")
@@ -40,18 +40,16 @@ def index_page(request: Request, response: Response, username: Optional[str] = C
 
 
 @root_router.post("/login/", status_code=201)
-def process_login_page(*, request: Request, response: Response, username: str = Form(...), password: str = Form(...)):
+def process_login_page(*, response: Response, username: str = Form(...), password: str = Form(...)):
     user = USERS.get(username)
     #Если не найдёт ключ, вернёт пустое значение
     #user = users[username] выдаст KeyError при пустом значении.
     if not user or not verify_password(username, password):
         raise HTTPException(status_code=403, detail="Access forbidden")
-    response = TEMPLATES.TemplateResponse("form_accepted.html", {"request": request, "user": USERS[username]['name'], "balance": USERS[username]['balance']},)
-    # кодирует пользователя в base64 и подписывает данные(hmac)
     username_signed = create_user_cookie(username)
     # записывает куку с пользователем
     response.set_cookie(key="username", value=username_signed)
-    return response
+    return {"response": "Congratulations! You are logged in."}
 
 
 @root_router.get("/", status_code=200)

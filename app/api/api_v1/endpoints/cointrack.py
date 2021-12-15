@@ -2,6 +2,7 @@ import asyncio
 import httpx
 from fastapi import APIRouter, Form, Query, Depends, HTTPException
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.orm import Session
 from pydantic import HttpUrl
 from typing import Optional, List
@@ -13,18 +14,36 @@ from app.services import generate_follow_list, validate_phone
 
 URL = 'https://api.coingecko.com/api/v3/simple/price'
 
+scheduler = AsyncIOScheduler(timezone='utc')
+scheduler.start()
 
 router = APIRouter()
 
 
-def get_simple_price(url: HttpUrl, coin: str, currency: str) -> dict:
+def get_simple_price(
+        url: HttpUrl,
+        coin: str,
+        currency: str,
+        db: Session,
+        ) -> dict:
     params = {'ids': coin, 'vs_currencies': currency}
     headers={"User-agent": "cointrack bot 0.1"}
     try:
-        response = httpx.get(url, params=params, headers=headers)
+        response_raw = httpx.get(url, params=params, headers=headers)
+        response = response_raw.json()
+        print(response)
     except Exception:
         raise HTTPException(status_code=404, detail="Page not found")
-    return response.json()
+    name = [key for key in response][0]
+    label = [key for key in response[name]][0]
+    price = float(response[name][label])
+    coin_price_in = CoinPriceCreate(
+            coin_name = name,
+            currency_label = label,
+            price = price,
+            submitter_id = 1)
+    crud.coin_price.create(db=db, obj_in=coin_price_in)
+    return response
 
 
 @router.post("/request/coin/", status_code=201)
@@ -35,20 +54,13 @@ def post_request_coin(
         currency: str = Form(...),
         db: Session = Depends(deps.get_db)
         ):
-    response = get_simple_price(url, coin, currency)
-    name = [key for key in response][0]
-    label = [key for key in response[name]][0]
-    price = float(response[name][label])
-    coin_price_in = CoinPriceCreate(
-            coin_name = name,
-            currency_label = label,
-            price = price,
-            submitter_id = 1)
+    job_id = f'{coin}_{currency}'
+    scheduler.add_job(get_simple_price, 'interval', [url, coin, currency, db], id=job_id, coalesce=False, replace_existing=True, seconds=10)
+    jobs = scheduler.get_jobs()
+    for job in jobs:
+        print(job.id)
+    response = get_simple_price(url, coin, currency, db)
     return response
-
-
-#crud.coin_price.create(db=db, obj_in=coin_price_in)
-#    return response
 
 
 async def get_simple_price_async(coin_list: List, url: HttpUrl, params: dict, headers: dict):
@@ -85,9 +97,6 @@ async def follow_all_coins(*,
         tasks.append(task)
     await asyncio.gather(*tasks)
     return coin_list
-
-#        crud.coin_price.create(db=db, obj_in=coin_price_in)
-#    return {"Response": "Все монеты отлеживаются"}
 
 
 @router.get("/unify_phone_from_query/")
