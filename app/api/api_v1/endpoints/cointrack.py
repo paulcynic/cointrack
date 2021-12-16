@@ -2,20 +2,18 @@ import asyncio
 import httpx
 from fastapi import APIRouter, Form, Query, Depends, HTTPException
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.orm import Session
 from pydantic import HttpUrl
 from typing import Optional, List
 
 from app import crud
+from app.core.scheduler import scheduler
 from app.api import deps
 from app.schemas.coin_price import CoinPriceCreate
 from app.services import generate_follow_list, validate_phone
 
 URL = 'https://api.coingecko.com/api/v3/simple/price'
 
-scheduler = AsyncIOScheduler(timezone='utc')
-scheduler.start()
 
 router = APIRouter()
 
@@ -54,8 +52,8 @@ def post_request_coin(
         currency: str = Form(...),
         db: Session = Depends(deps.get_db)
         ):
-    job_id = f'{coin}_{currency}'
-    scheduler.add_job(get_simple_price, 'interval', [url, coin, currency, db], id=job_id, coalesce=False, replace_existing=True, seconds=10)
+    task_id = f'{coin}_{currency}'
+    scheduler.add_job(get_simple_price, 'interval', [url, coin, currency, db], id=task_id, replace_existing=True, seconds=10)
     jobs = scheduler.get_jobs()
     for job in jobs:
         print(job.id)
