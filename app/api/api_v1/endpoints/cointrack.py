@@ -11,6 +11,7 @@ from app.core.scheduler import scheduler
 from app.api import deps
 from app.schemas.coin_price import CoinPriceCreate
 from app.services import generate_follow_list, validate_phone
+from app.notifications.telegram_notification import send_message
 
 URL = 'https://api.coingecko.com/api/v3/simple/price'
 
@@ -22,14 +23,14 @@ def get_simple_price(
         url: HttpUrl,
         coin: str,
         currency: str,
-        db: Session,
+        limit: int,
+        db: Session = Depends(deps.get_db)
         ) -> dict:
     params = {'ids': coin, 'vs_currencies': currency}
     headers={"User-agent": "cointrack bot 0.1"}
     try:
         response_raw = httpx.get(url, params=params, headers=headers)
         response = response_raw.json()
-        print(response)
     except Exception:
         raise HTTPException(status_code=404, detail="Page not found")
     name = [key for key in response][0]
@@ -41,6 +42,10 @@ def get_simple_price(
             price = price,
             submitter_id = 1)
     crud.coin_price.create(db=db, obj_in=coin_price_in)
+    if price > limit:
+        tele_name = str(name).replace('-', '\\-')
+        tele_price = str(price).replace('.', '\\.')
+        send_message(f'{tele_name} {tele_price} {label}')
     return response
 
 
@@ -50,14 +55,15 @@ def post_request_coin(
         url: HttpUrl = URL,
         coin: str = Form(...),
         currency: str = Form(...),
+        limit: int = 0,
         db: Session = Depends(deps.get_db)
         ):
     task_id = f'{coin}_{currency}'
-    scheduler.add_job(get_simple_price, 'interval', [url, coin, currency, db], id=task_id, replace_existing=True, seconds=10)
+    scheduler.add_job(get_simple_price, 'interval', [url, coin, currency, limit, db], id=task_id, replace_existing=True, seconds=10)
     jobs = scheduler.get_jobs()
     for job in jobs:
         print(job.id)
-    response = get_simple_price(url, coin, currency, db)
+    response = get_simple_price(url, coin, currency, limit, db)
     return response
 
 
