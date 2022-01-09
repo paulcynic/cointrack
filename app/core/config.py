@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     SQLALCHEMY_DATABASE_URI: Optional[str] = "postgresql+psycopg2://paulcynic@localhost/cointrack_db"
     FIRST_SUPERUSER: str = "paul@user.com"
-    URL = 'https://api.coingecko.com/api/v3/simple/price'
+    URL_SIMPLE_PRICE = 'https://api.coingecko.com/api/v3/simple/price'
 
     class Config:
         case_sensitive = True

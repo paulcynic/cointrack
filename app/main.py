@@ -59,7 +59,7 @@ def request_coin(*,
         ):
     coins = crud.coin.get_multi(db=db, limit=4)
     currencies = crud.currency.get_multi(db=db, limit=5)
-    return TEMPLATES.TemplateResponse("form.html", {
+    return TEMPLATES.TemplateResponse("index.html", {
         "request": request,
         "coins": coins,
         "currencies": currencies

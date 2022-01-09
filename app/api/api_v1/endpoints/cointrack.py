@@ -1,6 +1,7 @@
 import asyncio
 import httpx
-from fastapi import APIRouter, Form, Query, Depends, HTTPException
+from httpx import HTTPError
+from fastapi import APIRouter, Form, Query, Depends
 
 from sqlalchemy.orm import Session
 from pydantic import HttpUrl
@@ -9,9 +10,9 @@ from typing import Optional, List
 from app import crud
 from app.core.scheduler import scheduler
 from app.api import deps
+from app.clients.gecko_client import GeckoClient
 from app.schemas.coin_price import CoinPriceCreate
 from app.services import generate_follow_list, validate_phone
-from app.notifications.telegram_notification import send_message
 
 URL = 'https://api.coingecko.com/api/v3/simple/price'
 
@@ -19,58 +20,68 @@ URL = 'https://api.coingecko.com/api/v3/simple/price'
 router = APIRouter()
 
 
-def get_simple_price(
-        url: HttpUrl,
-        coin: str,
-        currency: str,
-        limit: int,
-        db: Session = Depends(deps.get_db)
-        ) -> dict:
-    params = {'ids': coin, 'vs_currencies': currency}
-    headers={"User-agent": "cointrack bot 0.1"}
-    try:
-        response_raw = httpx.get(url, params=params, headers=headers)
-        response = response_raw.json()
-    except Exception:
-        raise HTTPException(status_code=404, detail="Page not found")
-    name = [key for key in response][0]
-    label = [key for key in response[name]][0]
-    price = float(response[name][label])
-    coin_price_in = CoinPriceCreate(
-            coin_name = name,
-            currency_label = label,
-            price = price,
-            submitter_id = 1)
-    crud.coin_price.create(db=db, obj_in=coin_price_in)
-    if price > limit:
-        tele_name = str(name).replace('-', '\\-')
-        tele_price = str(price).replace('.', '\\.')
-        send_message(f'{tele_name} {tele_price} {label}')
-    return response
+#def get_simple_price(
+#        url: HttpUrl,
+#        coin: str,
+#        currency: str,
+#        limit: float,
+#        db: Session
+#        ) -> dict:
+#    params = {'ids': coin, 'vs_currencies': currency}
+#    headers={"User-agent": "cointrack bot 0.1"}
+#    try:
+#        raw_response = httpx.get(url, params=params, headers=headers)
+#        raw_response.raise_for_status()
+#    except HTTPError:
+#        raise Exception(
+#                    f"Request failure:\n"
+#                    f"GET: {url}\n"
+#                )
+#
+#    response = raw_response.json()
+#    name = [key for key in response][0]
+#    label = [key for key in response[name]][0]
+#    price = float(response[name][label])
+#    coin_price_in = CoinPriceCreate(
+#            coin_name = name,
+#            currency_label = label,
+#            price = price,
+#            submitter_id = 1)
+#    crud.coin_price.create(db=db, obj_in=coin_price_in)
+#    if price > limit:
+#        tele_name = str(name).replace('-', '\\-')
+#        tele_price = str(price).replace('.', '\\.')
+#        send_message(f'{tele_name} {tele_price} {label}')
+#    return response
 
 
 @router.post("/request/coin/", status_code=201)
 def post_request_coin(
-        *,
-        url: HttpUrl = URL,
+        gecko_client: GeckoClient = Depends(GeckoClient),
         coin: str = Form(...),
         currency: str = Form(...),
-        limit: int = 0,
-        db: Session = Depends(deps.get_db)
         ):
     task_id = f'{coin}_{currency}'
-    scheduler.add_job(get_simple_price, 'interval', [url, coin, currency, limit, db], id=task_id, replace_existing=True, seconds=10)
+    scheduler.add_job(gecko_client.send_telegram_message, "interval", [coin, currency], id=task_id, replace_existing=True, seconds=20)
     jobs = scheduler.get_jobs()
     for job in jobs:
         print(job.id)
-    response = get_simple_price(url, coin, currency, limit, db)
+    params={"ids": coin, "vs_currencies": currency}
+    response = gecko_client.get_simple_price(params=params)
     return response
 
 
 async def get_simple_price_async(coin_list: List, url: HttpUrl, params: dict, headers: dict):
-    async with httpx.AsyncClient() as client:
-        response_raw = await client.get(url=url, params=params, headers=headers)
-    response = response_raw.json()
+    try:
+        async with httpx.AsyncClient() as client:
+            raw_response = await client.get(url=url, params=params, headers=headers)
+        raw_response.raise_for_status()
+    except HTTPError:
+        raise Exception(
+                    f"AsyncRequest failure:\n"
+                    f"GET: {url}\n"
+                )
+    response = raw_response.json()
     name = [key for key in response][0]
     label = [key for key in response[name]][0]
     price = float(response[name][label])
