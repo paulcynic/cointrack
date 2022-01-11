@@ -8,9 +8,8 @@ function clearList(){
 function addResultForm(text){
 	if (text.length == 0) return;
 	var divResult = document.getElementById("divResult");
-	var bracket = document.createElement("fieldset");
     var p = document.createElement("p")
-	divResult.appendChild(bracket).appendChild(p);
+	divResult.appendChild(p);
 	var pText = document.createTextNode(text);
 	p.appendChild(pText);
 }

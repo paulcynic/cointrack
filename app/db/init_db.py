@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.core.config import settings
+from app.models import Coin, Currency
 
 # from sqlalchemy import create_engine
 
@@ -38,8 +39,7 @@ def init_db(db: Session) -> None:
         if not superuser:
             user_in = schemas.UserCreate(
                 name=settings.FIRST_SUPERUSER,
-                password="some_password_1",
-                balance=0,
+                password=settings.FIRST_SUPERUSER_PW,
                 is_superuser=True,
             )
             superuser = crud.user.create(db, obj_in=user_in)  # noqa: F841
@@ -48,7 +48,7 @@ def init_db(db: Session) -> None:
                 "Skipping creating superuser. User with email "
                 f"{settings.FIRST_SUPERUSER} already exists. "
             )
-        currencies = crud.currency.get_multi(db, limit=3)
+        currencies = db.query(Currency).first()
         if not currencies:
             with open("currencies.json", "r", encoding="utf-8") as currency_db:
                 currencies = json.load(currency_db)
@@ -57,7 +57,7 @@ def init_db(db: Session) -> None:
                             label = currencies[i]
                         )
                     crud.currency.create(db, obj_in=currency_in)
-        coins = crud.coin.get_multi(db, limit=10)
+        coins = db.query(Coin).first()
         if not coins:
             with open("coins.json", "r", encoding="utf-8") as coin_db:
                 coins = json.load(coin_db)
@@ -70,5 +70,5 @@ def init_db(db: Session) -> None:
         logger.warning(
             "Skipping creating superuser.  FIRST_SUPERUSER needs to be "
             "provided as an env variable. "
-            "e.g.  FIRST_SUPERUSER=admin@api.coursemaker.io"
+            "e.g.  FIRST_SUPERUSER=admin@api.mail.io"
         )

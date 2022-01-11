@@ -5,8 +5,6 @@ from pydantic import BaseModel
 
 class UserBase(BaseModel):
     name: Optional[str]
-    password: Optional[str]
-    balance: Optional[int] = None
     is_superuser: bool = False
 
 
@@ -26,11 +24,13 @@ class UserInDBBase(UserBase):
 
     class Config:
         orm_mode = True
-# Pydantic’s orm_mode (which you can see in UserInDBBase) will tell the
-# Pydantic model to read the data even if it is not a dict, but an ORM model.
 
 
 # Additional properties to return via API
+class UserInDB(UserInDBBase):
+    hashed_password: str
+
+
 class User(UserInDBBase):
-    pass
+    ...
 

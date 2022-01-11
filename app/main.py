@@ -34,7 +34,7 @@ def index_page(request: Request, response: Response, username: Optional[str] = C
         response = login_page
         response.delete_cookie("username")
         return response
-    url = app.url_path_for("request_coin")
+    url = app.url_path_for("root")
     response = RedirectResponse(url=url)
     return response
 
@@ -53,7 +53,7 @@ def process_login_page(*, response: Response, username: str = Form(...), passwor
 
 
 @root_router.get("/", status_code=200)
-def request_coin(*,
+def root(*,
         request: Request,
         db: Session = Depends(deps.get_db)
         ):

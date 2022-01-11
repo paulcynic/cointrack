@@ -6,8 +6,7 @@ from . import Base
 class User(Base):
     id = Column(Integer, primary_key=True, index=True, unique=True)
     name = Column(String(128), unique=True, nullable=False)
-    password = Column(String(256), nullable=True)
-    balance = Column(Integer, nullable=True)
+    hashed_password = Column(String(128), nullable=False)
     is_superuser = Column(Boolean, default=False)
     coins = relationship(
             "CoinPrice",
