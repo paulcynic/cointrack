@@ -63,13 +63,17 @@ class GeckoClient:
         tele_label = str(coin_price.currency_label).upper()
         return f'{tele_name} {tele_price} {tele_label}'
 
-    def send_telegram_message(self, coin, currency) -> dict:
+    def send_telegram_message(self, coin, currency, lower, upper) -> dict:
         get_params={"ids": coin, "vs_currencies": currency}
         res = self.get_simple_price(params=get_params)
         db = deps.SessionLocal()
         db_obj = self._add_response_to_db(res, db)
         db.close()
-        bot_message = self._create_telegram_message(db_obj)
+        if 0 < db_obj.price < lower or upper < db_obj.price:
+            bot_message = self._create_telegram_message(db_obj)
+        else:
+            telecoin = coin.replace('-', '\\-')
+            bot_message = f"Your {telecoin} {currency} is tracked"
         bot_token = settings.TELEGRAM_BOT_TOKEN
         bot_chatId = settings.BOT_CHAT_ID
         params = {'chat_id': bot_chatId, 'parse_mode': 'MarkdownV2', 'text': bot_message}

@@ -24,7 +24,7 @@ function addResultString(text, p){
 }
 
 
-function fetchPrice(){
+function showPrice(){
 	// Параметры поиска
     var form = document.forms.form
 	var coin = form.querySelector("select[name=coin]").value;
@@ -45,7 +45,46 @@ function fetchPrice(){
 		};
 		
 	// Метод POST
-	req.open("POST", "/api/v1/coins/request/coin/", true);
+	req.open("POST", "/api/v1/coins/show/price", true);
+
+	// Установка заголовков
+	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	//req.setRequestHeader("Content-Length", searchString.length);
+	
+	// Отправка данных BODY методом POST 
+	req.send(searchString);			
+}
+
+
+function followCoin(){
+    var form = document.forms.form
+	var coin = form.querySelector("select[name=coin]").value;
+	var currency = form.querySelector("select[name=currency]").value;
+	var lower = form.querySelector("input[name=lower]").value;
+	var upper = form.querySelector("input[name=upper]").value;
+	// Формирование строки поиска
+	var searchString = "coin=" + coin + "&" + "currency=" + currency + "&" + "lower=" + String(lower) + "&" + "upper=" + String(upper);
+	//alert("searchString: " + searchString);
+	
+	// Запрос к серверу
+	var req = new XMLHttpRequest();
+	req.onreadystatechange = function(){
+			if (req.readyState != 4) return;
+            var respText = req.responseText;
+            var resObj = JSON.parse(respText);
+            var responseText = "";
+
+            if (String(resObj["detail"]).startsWith("[")) {
+                responseText = "Enter correct Lower and Upper limits";
+            }else{
+                responseText = resObj["detail"];
+            }
+			clearList();
+			addResultForm(responseText);
+		};
+		
+	// Метод POST
+	req.open("POST", "/api/v1/coins/follow/coin", true);
 
 	// Установка заголовков
 	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -75,7 +114,7 @@ function showAll(){
 	};
 		
 	// Метод POST
-	req.open("GET", "/api/v1/coins/follow_all/", true);
+	req.open("GET", "/api/v1/coins/follow/all", true);
 
 	req.send();			
 }

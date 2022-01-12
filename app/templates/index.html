@@ -57,13 +57,14 @@
           </select>
         </div>
         <div class="col-md-3 col-sm-6 col-xs-12">
-          <input class="form-control" type="number" step="0.01" min="0" placeholder="Lower limit" aria-label="Input lower limit">
+          <input name="lower" class="form-control" type="number" step="0.01" min="0" placeholder="Lower limit" aria-label="Input lower limit">
         </div>
         <div class="col-md-3 col-sm-6 col-xs-12">
-          <input class="form-control" type="number" step="0.01" max="500000" placeholder="Upper limit" aria-label="Input upper limit">
+          <input name="upper" class="form-control" type="number" step="0.01" min="0"  placeholder="Upper limit" aria-label="Input upper limit">
         </div>
         <div class="col-md-3 col-sm-6 col-xs-12">
-          <button class="btn btn-outline-secondary" type="button" onclick="fetchPrice()">Follow</button>
+          <button class="btn btn-outline-secondary" type="button" onclick="showPrice()">Show current price</button>
+          <button class="btn btn-outline-secondary" type="button" onclick="followCoin()">Follow coin</button>
         </div>
         <div class="col-md-3 col-sm-6 col-xs-12">
           <button class="btn btn-outline-secondary" type="button" onclick="showAll()">Show all coins</button>
