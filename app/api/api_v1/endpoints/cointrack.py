@@ -50,7 +50,7 @@ def follow_coin(
             [form.coin, form.currency, form.lower, form.upper],
             id=task_id,
             replace_existing=True,
-            hours=6,
+            seconds=15,
             )
     return {"detail": f"Your {form.coin} {form.currency} is tracked!"}
 

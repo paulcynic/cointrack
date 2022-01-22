@@ -13,6 +13,7 @@ from app.api import deps
 from app.user_data import USERS
 from app.api.api_v1.api import api_router
 from app.core.config import settings
+from app.core.logging_config import setup_logging
 from app.validators import get_username_from_signed_string, verify_password, create_user_cookie
 
 
@@ -78,4 +79,6 @@ async def add_process_time_header(request: Request, call_next):
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.include_router(root_router)
+
+setup_logging()
 

@@ -6,9 +6,9 @@ from pathlib import Path
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     BASE_PATH = Path(__file__).resolve().parent.parent
-    TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-    BOT_CHAT_ID = os.getenv('BOT_CHAT_ID')
-    JWT_SECRET = os.getenv('SECRET_KEY')
+    TELEGRAM_BOT_TOKEN: Optional[str] = os.getenv('TELEGRAM_BOT_TOKEN')
+    BOT_CHAT_ID: Optional[str] = os.getenv('BOT_CHAT_ID')
+    JWT_SECRET: Optional[str] = os.getenv('SECRET_KEY')
     ALGORITHM: str = "HS256"
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
@@ -27,7 +27,9 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: str = "user@user.com"
     FIRST_SUPERUSER_PW: str = "password"
 
-    URL_SIMPLE_PRICE = 'https://api.coingecko.com/api/v3/simple/price'
+    URL_SIMPLE_PRICE: str = 'https://api.coingecko.com/api/v3/simple/price'
+    LOG_LEVEL: str = 'INFO'
+    LOG_TRACEBACK: bool = False
 
     class Config:
         case_sensitive = True
