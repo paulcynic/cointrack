@@ -12,24 +12,22 @@
 1. Choose a coin from the list.
 2. Choose a currency from the list.
 3. Push "show current price" 
-![coin tracker show all](../master/docs/_static/ex_show_all.png)
    - or push "show all coins" to see the price for all coins.
 4. Enter lower and upper limits.
 5. Push "follow coin".
-![coin tracker follow](../master/docs/_static/ex_follow.png)
 6. If the price of the selected coin changes, the telegram bot will notify you. 
 
 ## How it works
 
 ```mermaid
 graph LR
-A(Client) -- request to server --> B(cointrack.ru)
-B -- api-request --> C(www.coingecko.com)
-C -- api-response --> B
-B -- telegram notification --> D(CriptoCurrencyTrackingBot)
-B -- client notification --> A
+A(Client) -->|request to server| B(cointrack.ru)
+B -->|api-request| C(www.coingecko.com)
+C -->|api-response| B
+B -->|telegram notification| D(CriptoCurrencyTrackingBot)
+B -->|client notification| A
 ```
-All queries will be stored in a database table coinprice.
+All queries will be stored in a database table coinprice:
 
 |id|coin|currency|price|datetime|user_id|
 |--|------|---------|------|-----------|--|
