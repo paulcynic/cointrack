@@ -17,23 +17,6 @@
 5. Push "follow coin".
 6. If the price of the selected coin changes, the telegram bot will notify you. 
 
-## How it works
-
-```mermaid
-graph LR
-A(Client) -->|request to server| B(cointrack.ru)
-B -->|api-request| C(www.coingecko.com)
-C -->|api-response| B
-B -->|telegram notification| D(CriptoCurrencyTrackingBot)
-B -->|client notification| A
-```
-All queries will be stored in a database table coinprice:
-
-|id|coin|currency|price|datetime|user_id|
-|--|------|---------|------|-----------|--|
-|3|bitcoin|usd|45000|2022-02-10|22|
-|7|ethereum|usd|4000|2022-02-08|15|
-
 ## Installation
 
 From your linux terminal:
