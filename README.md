@@ -1,7 +1,7 @@
 # Cointrack
 ***Cointrack is an app for tracking cryptocurrency with telegram-bot notification.***
 
-![coin tracker image](../master/assets/images/docs/_static/ex_show_price.png)
+![coin tracker image](../master/docs/_static/ex_show_price.png)
 
 -[Installation](#installation)
 -[Setup instruction](#setup-instruction)
