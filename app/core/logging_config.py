@@ -20,7 +20,7 @@ class InterceptHandler(logging.Handler):
             depth += 1
 
         logger.opt(depth=depth,
-                   exception=settings.LOG_TRACEBACK  #record.exc_info
+                   exception=False  #record.exc_info
                    ).log(level, record.getMessage())
 
 
@@ -38,7 +38,7 @@ def setup_logging():
     # add to serialize -- "serialize": JSON_LOGS}])
     # writes logs to file
     logger.add("server.log",
-               format="{time} {level} {message}",
+               #format="{time} {level} {message}",
                level=settings.LOG_LEVEL,
                backtrace=False,
                rotation="10 MB",
