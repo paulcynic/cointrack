@@ -3,9 +3,38 @@
 
 ![coin tracker image](../master/docs/_static/ex_show_price.png)
 
--[Installation](#installation)
--[Setup instruction](#setup-instruction)
--[Remarks](#remarks)
+- [Installation](#installation)
+- [Setup instruction](#setup-instruction)
+- [Remarks](#remarks)
+
+## How to use
+
+1. Choose a coin from the list.
+2. Choose a currency from the list.
+3. Push "show current price" 
+![coin tracker show all](../master/docs/_static/ex_show_all.png)
+   - or push "show all coins" to see the price for all coins.
+4. Enter lower and upper limits.
+5. Push "follow coin".
+![coin tracker follow](../master/docs/_static/ex_follow.png)
+6. If the price of the selected coin changes, the telegram bot will notify you. 
+
+## How it works
+
+```mermaid
+graph LR
+A(Client) -- request to server --> B(cointrack.ru)
+B -- api-request --> C(www.coingecko.com)
+C -- api-response --> B
+B -- telegram notification --> D(CriptoCurrencyTrackingBot)
+B -- client notification --> A
+```
+All queries will be stored in a database table coinprice.
+
+|id|coin|currency|price|datetime|user_id|
+|--|------|---------|------|-----------|--|
+|3|bitcoin|usd|45000|2022-02-10|22|
+|7|ethereum|usd|4000|2022-02-08|15|
 
 ## Installation
 
@@ -36,7 +65,7 @@ From your linux terminal:
 10. Open http://localhost:8002/
  
 ## Remarks
-Personalize defaults through environment variables.
+Write in `cointrack/run.sh` your personal variables.
 ```
 #!/bin/sh
 export SECRET_KEY='your_secret_key'
