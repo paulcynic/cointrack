@@ -53,7 +53,7 @@ class GeckoClient:
                 coin_name = name,
                 currency_label = label,
                 price = price,
-                submitter_id = 1)
+                submitter_id = 1) # Нужно добавить пользователя полученного из токена
         crud.coin_price.create(db=db, obj_in=coin_price_in)
         return coin_price_in
 

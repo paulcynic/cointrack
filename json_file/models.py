@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 
 from sqlalchemy.ext.declarative import declarative_base
 
-#engine = create_engine('postgresql://paulcynic@localhost/cointrack_db', echo=True)
+#engine = create_engine('postgresql://username:password@host/db_name', echo=True)
 Base = declarative_base()
 
 class Coin(Base):
