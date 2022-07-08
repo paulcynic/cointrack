@@ -1,0 +1,10 @@
+# Files ignored when building docker images:
+# https://docs.docker.com/engine/reference/builder/#dockerignore-file
+.venv
+__pycache__
+venv
+env
+.dockerignore
+.git*
+Dockerfile
+node_modules

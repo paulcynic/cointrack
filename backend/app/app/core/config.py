@@ -20,12 +20,7 @@ class Settings(BaseSettings):
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
-        "http://localhost:3000",
-        "http://localhost:3001",  # type: ignore
-        "http://localhost:8002",
-        "http://localhost:8001",  # type: ignore
-    ]
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = os.getenv('BACKEND_CORS_ORIGINS') # noqa
 
     # Origins that match this regex OR are in the above list are allowed
     BACKEND_CORS_ORIGIN_REGEX: Optional[
@@ -41,7 +36,7 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    SQLALCHEMY_DATABASE_URI: Optional[str] = "postgresql+psycopg2://fedora:fedora@127.0.0.1/cointrack_db"
+    SQLALCHEMY_DATABASE_URI: Optional[str] = os.getenv('DATABASE_URL')
     FIRST_SUPERUSER: str = "user@user.com"
     FIRST_SUPERUSER_PW: str = "password"
 

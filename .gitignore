@@ -1,7 +1,7 @@
 
 # Gitignore for backend python app
-backend/devrun.sh
-backend/server.log
+devrun.sh
+server.log
 
 
 # Byte-compiled / optimized / DLL files

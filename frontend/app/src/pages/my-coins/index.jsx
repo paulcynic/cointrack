@@ -83,6 +83,10 @@ const CointrackDashboard = () => {
 			setLoading(false);
 			return setError({ currency: "Please Choose Any Currency" });
 		}
+		if (!limitValidation(followCoinForm.lower, followCoinForm.upper)) {
+			setLoading(false);
+			return setError({ upper: "The upper limit should be greater than the lower" });
+		}
 		if (followCoinForm.lower <= 0.0) {
 			setLoading(false);
 			return setError({ lower: "Please Enter Correct Lower Limit" });
@@ -98,11 +102,6 @@ const CointrackDashboard = () => {
 		if (isNaN(+followCoinForm.upper)) {
 			setLoading(false);
 			return setError({ upper: "Please Enter Whole Number Not String" });
-		}
-		if (!limitValidation(followCoinForm.lower, followCoinForm.upper)) {
-			setLoading(false);
-			console.log(typeof (followCoinForm.upper));
-			return setError({ upper: "The upper limit should be greater than the lower" });
 		}
 
 		client.fetchUser().then((user) => {

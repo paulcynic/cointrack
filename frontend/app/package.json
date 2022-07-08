@@ -1,7 +1,14 @@
 {
-  "name": "recipe-app",
-  "version": "0.1.0",
+  "name": "Cointrack",
+  "version": "0.2.0",
   "private": true,
+  "repository": "paulcynic/cointrack",
+  "keywords": [],
+  "author": "Paul Cynic",
+  "license": "MIT",
+  "engines": {
+    "node": "16.15.1"
+  },
   "dependencies": {
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
@@ -28,12 +35,6 @@
     "eject": "react-scripts eject",
     "lint": "eslint src/**/*.js src/**/*.jsx",
     "lint:fix": "eslint src/**/*.js src/**/*.jsx --fix"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
