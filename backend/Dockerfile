@@ -1,7 +1,4 @@
 FROM python:3.10
-# create the app user
-# RUN addgroup --system app && adduser --system --group app
-
 WORKDIR /app/
 
 # https://docs.python.org/3/using/cmdline.html#envvar-PYTHONDONTWRITEBYTECODE
@@ -22,4 +19,4 @@ RUN pip3 install -r /app/requirements.txt --no-cache-dir && \
 
 ENV PYTHONPATH=/app
 # And then will start Uvicorn
-CMD ["./devrun.sh"]
+CMD ["./run.sh"]
