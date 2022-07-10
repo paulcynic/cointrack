@@ -9,10 +9,15 @@ COPY ./app/package.json /app/package.json
 COPY ./app/package-lock.json /app/package-lock.json
 
 RUN npm install --location=global
+# The same as RUN npm ci
 
 COPY ./app /app
 
 FROM development AS build
+
+ARG REACT_APP_API_BASE_PATH
+
+ENV REACT_APP_API_BASE_PATH $REACT_APP_API_BASE_PATH
 
 RUN npm run build
 

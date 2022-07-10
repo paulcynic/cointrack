@@ -10,8 +10,7 @@ services:
       - "--entrypoints.http.address=:80"
       - "--entrypoints.https.address=:443"
       - "--providers.docker=true"
-      - "--providers.docker.watch=true"
-      - "--providers.docker.swarmmode=true"
+      - "--providers.docker.swarmmode=false"
       - "--providers.docker.network=cointrack_default"
       - "--providers.docker.endpoint=unix:///var/run/docker.sock"
       - "--providers.docker.constraints=Label(`traefik.constraint-label`, `traefik-public`)"
@@ -21,16 +20,17 @@ services:
       - "--api"
       - "--providers.docker.exposedbydefault=false"
       # Create mechanism to generate certifiacte called "LE"
+      - "--certificatesresolvers.le.acme.httpchallenge=true"
       - "--certificatesresolvers.le.acme.tlschallenge=true"
-      !!- "--certificatesresolvers.le.acme.email=${LETSENCRYPT_EMAIL?Variable not set}"
-      # Store obtained certificates on the given storage
+      - "--certificatesresolvers.le.acme.email=paulcynic@mail.ru"
       - "--certificatesresolvers.le.acme.storage=/le/acme.json"
       # Allow to communicate with backend containers running https. https://stackoverflow.com/questions/49412376/internal-server-error-with-traefik-https-backend-on-port-443
-      #- --serverstransport.insecureskipverify=true
+      #- "--serverstransport.insecureskipverify=true"
+      #- "--providers.docker.tls.insecureSkipVerify=true"
     ports:
       - "80:80"
       - "443:443"
-    labels: # !!!!Установи домен хоста и basic-auth traefik dashboard
+    labels:
       # Enable Traefik for this service, to make it available in the public network
       - "traefik.enable=true"
       # Use the traefik-public network (declared below)
@@ -38,45 +38,39 @@ services:
       # This public Traefik will only use services with this label
       - "traefik.constraint-label=traefik-public"
       # ======================middlewares=for=all=services====================
-      - "traefik.http.middlewares.https-8080-redirect.redirectscheme.port=8080"
-      - "traefik.http.middlewares.https-8002-redirect.redirectscheme.port=8002"
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
-      #!- "traefik.http.middlewares.admin-auth.basicauth.users=TRAEFIK_DASHBOARD_USERNAME:TRAEFIK_DASHBOARD_HASHED_PASSWORD"
+      - "traefik.http.middlewares.admin-auth.basicauth.users=admin:$$2y$$05$$1OX5jZ1Kpm/iVKE8tgUhu.STmPkgi0lLxVeP5yEcRioFdV4mcgdTu"
       # ===========Traefik=Dashboard=service==================================
-      - "traefik.http.routers.traefik-dashboard-http.rule=Host(`traefik.democointrack.ru`)"
+      - "traefik.http.routers.traefik-dashboard-http.rule=Host(`traefik.cointrack.ru`)"
       - "traefik.http.routers.traefik-dashboard-http.entrypoints=http"
       - "traefik.http.routers.traefik-dashboard-http.middlewares=https-redirect"
-      - "traefik.http.routers.traefik-dashboard-https.rule=Host(`traefik.democointrack.ru`)"
+      - "traefik.http.routers.traefik-dashboard-https.rule=Host(`traefik.cointrack.ru`)"
       - "traefik.http.routers.traefik-dashboard-https.middlewares=admin-auth"
       - "traefik.http.routers.traefik-dashboard-https.entrypoints=https"
-      - "traefik.http.routers.traefik-dashboard-https.tls=true"
       - "traefik.http.routers.traefik-dashboard-https.tls.certresolver=le"
       - "traefik.http.routers.traefik-dashboard-https.service=api@internal"
-      - "traefik.http.services.traefik-proxy.loadbalancer.server.port=8080"
+      - "traefik.http.services.traefik-proxy.loadbalancer.server.port=80"
 
 #==============REACT=FRONTEND==============================================
   frontend:
+    #image: cointrack_frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
     depends_on:
       - backend
-    ports:
-      - "8080:80"
     labels:
       - "traefik.enable=true"
       - "traefik.constraint-label=traefik-public"
-      # Check free domens in nic.ru
+      # Check free domens in nslookup --type=A example.com
       # ======================proxy=for=cointrack=stack=======================
+      - "traefik.http.routers.cointrack-http.rule=Host(`cointrack.ru`)"
       - "traefik.http.routers.cointrack-http.entrypoints=http"
-      - "traefik.http.routers.cointrack-http.rule=Host(`democointrack.ru`)"
-      - "traefik.http.routers.cointrack-http.middlewares=https-redirect"
-      - "traefik.http.routers.cointrack-https.rule=Host(`democointrack.ru`)"
-      - "traefik.http.routers.cointrack-https.entrypoints=https"
-      - "traefik.http.routers.cointrack-https.middlewares=https-8080-redirect"
-      - "traefik.http.routers.cointrack-https.tls=true"
-      - "traefik.http.routers.cointrack-https.tls.certresolver=le"
+        #- "traefik.http.routers.cointrack-http.middlewares=https-redirect"
+        #- "traefik.http.routers.cointrack-https.rule=Host(`cointrack.ru`)"
+        #- "traefik.http.routers.cointrack-https.entrypoints=https"
+        #- "traefik.http.routers.cointrack-https.tls.certresolver=le"
       # Define the port inside of the Docker-service to use
       - "traefik.http.services.cointrack-frontend.loadbalancer.server.port=80"
 #==============FASTAPI=BACKEND=============================================
@@ -88,14 +82,12 @@ services:
       - db
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/cointrack_db
-      - BACKEND_CORS_ORIGINS=["http://127.0.0.1:8002","http://127.0.0.1:8080"]
-    ports:
-      - "8002:8002"
+      - BACKEND_CORS_ORIGINS=["http://cointrack.ru","https://cointrack.ru"]
     labels:
       - "traefik.enable=true"
       - "traefik.constraint-label=traefik-public"
-      - "traefik.http.routers.cointrack-backend.rule=PathPrefix(`/api/`)"
-      - "traefik.http.routers.cointrack-backend.middlewares=https-8002-redirect"
+      - "traefik.http.routers.cointrack-backend-http.rule=PathPrefix(`/api/v1/`) || PathPrefix(`/docs`)"
+      - "traefik.http.routers.cointrack-backend-http.entrypoints=http"
       - "traefik.http.services.cointrack-backend.loadbalancer.server.port=8002"
 #==============POSTGRES=DATABASE===========================================
   db:
