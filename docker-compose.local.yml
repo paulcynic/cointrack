@@ -4,9 +4,9 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile.local
       args:
         REACT_APP_API_BASE_PATH: http://127.0.0.1:8002
-      dockerfile: Dockerfile.local
     depends_on:
       - backend
     ports:
